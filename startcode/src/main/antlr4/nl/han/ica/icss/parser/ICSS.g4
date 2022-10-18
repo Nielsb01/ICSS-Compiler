@@ -55,10 +55,7 @@ ruleBody: decleration*;
 decleration: propertyName COLON expression SEMICOLON;
 propertyName: LOWER_IDENT;
 
-expression: literal | variableReference | expression multiplyOperation expression | expression (addOperation | substractOperation) expression;
-addOperation: PLUS;
-multiplyOperation: MUL;
-substractOperation: MIN;
+expression: literal | variableReference | expression MUL expression | expression (PLUS | MIN) expression;
 
 literal: boolLiteral | colorLiteral | percentageLiteral | pixelLiteral | scalarLiteral;
 boolLiteral: TRUE | FALSE;
