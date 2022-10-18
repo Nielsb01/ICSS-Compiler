@@ -46,8 +46,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitStyleRule(ICSSParser.StyleRuleContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override public void enterVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
@@ -55,8 +55,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitVariableAssignment(ICSSParser.VariableAssignmentContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override public void enterVariableReference(ICSSParser.VariableReferenceContext ctx) {
@@ -68,8 +68,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitDecleration(ICSSParser.DeclerationContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override public void enterPropertyName(ICSSParser.PropertyNameContext ctx) {
@@ -101,8 +101,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitClassSelector(ICSSParser.ClassSelectorContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override public void enterIdSelector(ICSSParser.IdSelectorContext ctx) {
@@ -110,8 +110,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitIdSelector(ICSSParser.IdSelectorContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override public void enterTagSelector(ICSSParser.TagSelectorContext ctx) {
@@ -119,8 +119,8 @@ public class ASTListener extends ICSSBaseListener {
 	}
 
 	@Override public void exitTagSelector(ICSSParser.TagSelectorContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override
@@ -140,8 +140,8 @@ public class ASTListener extends ICSSBaseListener {
 	@Override
 	public void exitExpression(ICSSParser.ExpressionContext ctx) {
 		if (ctx.getChildCount() == 3) {
-			var t = currentContainer.pop();
-			currentContainer.peek().addChild(t);
+			var temp = currentContainer.pop();
+			currentContainer.peek().addChild(temp);
 		}
 	}
 
@@ -152,8 +152,8 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitIfClause(ICSSParser.IfClauseContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 
 	@Override
@@ -163,7 +163,7 @@ public class ASTListener extends ICSSBaseListener {
 
 	@Override
 	public void exitElseClause(ICSSParser.ElseClauseContext ctx) {
-		var t = currentContainer.pop();
-		currentContainer.peek().addChild(t);
+		var temp = currentContainer.pop();
+		currentContainer.peek().addChild(temp);
 	}
 }
