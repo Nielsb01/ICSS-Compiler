@@ -51,7 +51,7 @@ variableAssignment: variableReference ASSIGNMENT_OPERATOR expression SEMICOLON;
 
 variableReference: CAPITAL_IDENT;
 
-ruleBody: OPEN_BRACE (decleration | ifClause)* CLOSE_BRACE;
+ruleBody: OPEN_BRACE (decleration | ifClause | variableAssignment)* CLOSE_BRACE;
 decleration: propertyName COLON expression SEMICOLON;
 propertyName: LOWER_IDENT;
 

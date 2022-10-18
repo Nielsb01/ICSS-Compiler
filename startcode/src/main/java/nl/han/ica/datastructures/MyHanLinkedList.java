@@ -3,6 +3,13 @@ package nl.han.ica.datastructures;
 public class MyHanLinkedList<T> implements IHANLinkedList<T>{
     private MyHanLinkedListNode<T> firstNode = null;
 
+    public MyHanLinkedList() {
+    }
+
+    public MyHanLinkedList(MyHanLinkedListNode<T> firstNode) {
+        this.firstNode = firstNode;
+    }
+
     @Override
     public void addFirst(T value) {
         var temp = new MyHanLinkedListNode<>(value);
@@ -66,6 +73,10 @@ public class MyHanLinkedList<T> implements IHANLinkedList<T>{
             size++;
         }
         return size;
+    }
+
+    public MyHanLinkedListNode<T> getFirstNode() {
+        return firstNode;
     }
 
     private MyHanLinkedListNode<T> getNoteAtIndex(int index) {
