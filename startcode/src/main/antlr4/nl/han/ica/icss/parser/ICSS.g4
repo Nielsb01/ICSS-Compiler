@@ -54,7 +54,11 @@ variableReference: CAPITAL_IDENT;
 ruleBody: decleration*;
 decleration: propertyName COLON expression SEMICOLON;
 propertyName: LOWER_IDENT;
-expression: literal | variableReference;
+
+expression: literal | variableReference | expression multiplyOperation expression | expression (addOperation | substractOperation) expression;
+addOperation: PLUS;
+multiplyOperation: MUL;
+substractOperation: MIN;
 
 literal: boolLiteral | colorLiteral | percentageLiteral | pixelLiteral | scalarLiteral;
 boolLiteral: TRUE | FALSE;
@@ -63,7 +67,9 @@ percentageLiteral: PERCENTAGE;
 pixelLiteral: PIXELSIZE;
 scalarLiteral: SCALAR;
 
+
 selector: tagSelector | idSelector | classSelector;
 classSelector: CLASS_IDENT;
 idSelector: ID_IDENT;
 tagSelector: LOWER_IDENT;
+

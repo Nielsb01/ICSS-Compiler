@@ -122,4 +122,31 @@ public class ASTListener extends ICSSBaseListener {
 		var t = currentContainer.pop();
 		currentContainer.peek().addChild(t);
 	}
+
+	@Override public void enterAddOperation(ICSSParser.AddOperationContext ctx) {
+		currentContainer.peek().addChild(new AddOperation());
+	}
+
+	@Override public void enterMultiplyOperation(ICSSParser.MultiplyOperationContext ctx) {
+		currentContainer.peek().addChild(new MultiplyOperation());
+	}
+
+	@Override public void enterSubstractOperation(ICSSParser.SubstractOperationContext ctx) {
+		currentContainer.peek().addChild(new SubtractOperation());
+	}
+
+	@Override
+	public void enterExpression(ICSSParser.ExpressionContext ctx) {
+		if (ctx.getChildCount() == 3) {
+			currentContainer.push(new Expression() {
+			});
+		}
+	}
+	@Override
+	public void exitExpression(ICSSParser.ExpressionContext ctx) {
+		if (ctx.getChildCount() == 3) {
+			var t = currentContainer.pop();
+			currentContainer.peek().addChild(t);
+		}
+	}
 }
