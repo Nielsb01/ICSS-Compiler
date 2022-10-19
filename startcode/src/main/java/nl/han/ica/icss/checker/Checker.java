@@ -4,7 +4,9 @@ import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.datastructures.MyHanLinkedList;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.AddOperation;
 import nl.han.ica.icss.ast.operations.MultiplyOperation;
+import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
@@ -13,14 +15,6 @@ import java.util.HashMap;
 
 
 public class Checker {
-    private final String WIDTH = "width";
-
-    private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
-
-    public Checker() {
-        this.variableTypes = new MyHanLinkedList<>();
-    }
-
     public void check(AST ast) {
         var globalVariables = new MyHanLinkedList<VariableAssignment>();
         for (var child : ast.root.getChildren()) {
@@ -75,15 +69,37 @@ public class Checker {
         checkRuleBody(ifClause.body, scopeVars);
     }
 
+    /**
+     * Checks an Declaration ASTNote
+     * implements Check (CH04) and allowed Property usage
+     * @param declaration the current Declaration ASTNode
+     * @param scopeVars list of available declared variables
+     */
     private void checkDeclaration(Declaration declaration, MyHanLinkedList<VariableAssignment> scopeVars) {
-        checkExpression(declaration.expression, scopeVars);
-        //TODO implment CH04
-        //if (declaration.property.equals(WIDTH) && !())
+        var expressionType= checkExpression(declaration.expression, scopeVars);
+        var propertyName = declaration.property.name;
+        switch (propertyName) {
+            case "color":
+            case "background-color":
+                if (expressionType != ExpressionType.COLOR) {
+                    declaration.setError("Illegal use of literal for property: "+propertyName+", it must be a ColorLiteral.");
+                }
+                break;
+            case "width":
+            case "height":
+                if (expressionType != ExpressionType.PERCENTAGE && expressionType != ExpressionType.PIXEL) {
+                    declaration.setError("Illegal use of literal for property: "+propertyName+", a size property should use Percentage or PixelLiteral.");
+                }
+                break;
+            default:
+                declaration.setError("Illegal property used: "+propertyName+", Only (color, background-color, width, height) are allowed.");
+                break;
+        }
     }
 
     /**
      * Checks an Expression ASTNote calls itself recursively,
-     * implements Check (CH03)
+     * implements Check (CH02, CH03)
      * @param expression the current Expression ASTNode.
      * @param scopeVars list of available declared variables.
      * @return the ExpressionType of the given expression.
@@ -95,30 +111,47 @@ public class Checker {
             return checkVarReference((VariableReference) expression, scopeVars);
         }
 
-        var usesPixels = false;
-        var usesPercentages = false;
-        var usesColor = false;
         Operation operation = null;
-        for (var child : expression.getChildren()) {
-            if (child instanceof ColorLiteral) usesColor = true;
-            if (child instanceof PixelLiteral) usesPixels = true;
-            if (child instanceof PercentageLiteral) usesPercentages = true;
-            if (child instanceof Operation) operation = (Operation) child;
-            var expressionType = checkExpression((Expression) child, scopeVars);
-        }
-        //TODO implment CH02
-        if (operation != null){
-            if (usesColor && operation instanceof MultiplyOperation) {
-                expression.setError("Illegal use of ColorLiteral in math operation");
-            }
-            if (usesPercentages && usesPixels && !(operation instanceof MultiplyOperation)) {
-                expression.setError("Illegal use of PixelLiteral and ");
-            }
+        if (expression instanceof Operation) {
+            operation = (Operation) expression;
         }
 
+        if (operation != null) {
+            ExpressionType left = checkExpression(operation.lhs, scopeVars);
+            ExpressionType right = checkExpression(operation.rhs, scopeVars);
+            if (left == ExpressionType.COLOR || right == ExpressionType.COLOR) {
+                expression.setError("Illegal use of ColorLiteral in math operation");
+                System.out.println("Color check "+ left.toString() + right.toString());
+                return ExpressionType.UNDEFINED;
+            }
+            if (operation instanceof MultiplyOperation) {
+                if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
+                    expression.setError("Illegal use of only non ScalarLiterals in multiply operation");
+                    System.out.println("Mul check "+ left.toString() + right.toString());
+                    return ExpressionType.UNDEFINED;
+                }
+                if (left != ExpressionType.SCALAR) return left;
+                return right;
+            }
+            if ((operation instanceof SubtractOperation || operation instanceof AddOperation) && left != right){
+                expression.setError("Illegal use of different Literals in add or subtract operations");
+                System.out.println("Add/Sub check "+ left.toString() + right.toString());
+                return ExpressionType.UNDEFINED;
+            }
+
+            System.out.println("base "+ left.toString() + right.toString());
+            return left;
+        }
+        System.out.println("operation null " + expression.getClass().toString());
         return ExpressionType.UNDEFINED;
     }
 
+    /**
+     * Checks an Expression ASTNote,
+     * @param expression the current Expression ASTNode.
+     * @param scopeVars list of available declared variables.
+     * @return the ExpressionType of the given expression if Literal or call checkExpression recursively.
+     */
     private ExpressionType getExpressionType(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
         if (expression instanceof Literal) {
             if (expression instanceof PercentageLiteral) {
@@ -156,7 +189,7 @@ public class Checker {
         }
 
         if (!varIsDeclared) {
-            reference.setError("Variable:" + reference.name + "is undefined or cant be used in current scope");
+            reference.setError("Variable:"+reference.name+"is undefined or cant be used in current scope");
             return ExpressionType.UNDEFINED;
         }
         return getExpressionType(current.getValue().expression, scopeVars);
