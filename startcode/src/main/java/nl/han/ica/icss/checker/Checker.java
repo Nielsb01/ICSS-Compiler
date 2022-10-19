@@ -97,6 +97,13 @@ public class Checker {
         }
     }
 
+    /**
+     * Checks an Expression ASTNote,
+     * @param expression the current Expression ASTNode.
+     * @param scopeVars list of available declared variables.
+     * @return the ExpressionType of the given Expression,
+     * or UNDEFINED if expression option is not implemented.
+     */
     private ExpressionType checkExpression(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
         if (expression instanceof Literal) return getExpressionType(expression, scopeVars);
 
