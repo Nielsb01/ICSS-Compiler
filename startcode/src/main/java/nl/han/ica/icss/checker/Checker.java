@@ -3,8 +3,8 @@ package nl.han.ica.icss.checker;
 import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.datastructures.MyHanLinkedList;
 import nl.han.ica.icss.ast.*;
-import nl.han.ica.icss.ast.literals.BoolLiteral;
-import nl.han.ica.icss.ast.literals.ColorLiteral;
+import nl.han.ica.icss.ast.literals.*;
+import nl.han.ica.icss.ast.operations.MultiplyOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
@@ -13,6 +13,7 @@ import java.util.HashMap;
 
 
 public class Checker {
+    private final String WIDTH = "width";
 
     private IHANLinkedList<HashMap<String, ExpressionType>> variableTypes;
 
@@ -57,13 +58,14 @@ public class Checker {
      */
     private void checkIfClause(IfClause ifClause, MyHanLinkedList<VariableAssignment> scopeVars) {
         if (ifClause.conditionalExpression instanceof VariableReference) {
-            var varDeclaration = checkVarReference((VariableReference) ifClause.conditionalExpression, scopeVars);
-            if (varDeclaration == null || !(varDeclaration.expression instanceof BoolLiteral)) ifClause.setError("Condition expression is not a Boolean");
+            var expressionType = checkVarReference((VariableReference) ifClause.conditionalExpression, scopeVars);
+            if (expressionType != ExpressionType.BOOL) ifClause.setError("Condition expression is not a Boolean");
         }
 
         /*
         checking Literal unnecessary, because parser only parses on (variableReference | boolLiteral),
-        if not variableReference then its already boolLiteral. Could change the if clause above to catch all the instances NOT BoolLiteral.
+        if not variableReference then its already boolLiteral.
+        The if clause above could be changed to catch all the instances NOT BoolLiteral.
          */
 
         if(ifClause.elseClause != null) {
@@ -75,33 +77,63 @@ public class Checker {
 
     private void checkDeclaration(Declaration declaration, MyHanLinkedList<VariableAssignment> scopeVars) {
         checkExpression(declaration.expression, scopeVars);
+        //TODO implment CH04
+        //if (declaration.property.equals(WIDTH) && !())
     }
 
     /**
      * Checks an Expression ASTNote calls itself recursively,
      * implements Check (CH03)
-     * @param expression the current Expression ASTNode
-     * @param scopeVars list of available declared variables
+     * @param expression the current Expression ASTNode.
+     * @param scopeVars list of available declared variables.
+     * @return the ExpressionType of the given expression.
      */
-    private void checkExpression(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
+    private ExpressionType checkExpression(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
+        if (expression instanceof Literal) return getExpressionType(expression, scopeVars);
+
         if (expression instanceof VariableReference) {
-            checkVarReference((VariableReference) expression, scopeVars);
-            return;
+            return checkVarReference((VariableReference) expression, scopeVars);
         }
 
-        if (expression instanceof Literal) return;
-
+        var usesPixels = false;
+        var usesPercentages = false;
         var usesColor = false;
-        var usesOperation = false;
+        Operation operation = null;
         for (var child : expression.getChildren()) {
             if (child instanceof ColorLiteral) usesColor = true;
-            if (child instanceof Operation) usesOperation = true;
-            checkExpression((Expression) child, scopeVars);
+            if (child instanceof PixelLiteral) usesPixels = true;
+            if (child instanceof PercentageLiteral) usesPercentages = true;
+            if (child instanceof Operation) operation = (Operation) child;
+            var expressionType = checkExpression((Expression) child, scopeVars);
+        }
+        //TODO implment CH02
+        if (operation != null){
+            if (usesColor && operation instanceof MultiplyOperation) {
+                expression.setError("Illegal use of ColorLiteral in math operation");
+            }
+            if (usesPercentages && usesPixels && !(operation instanceof MultiplyOperation)) {
+                expression.setError("Illegal use of PixelLiteral and ");
+            }
         }
 
-        if (usesColor && usesOperation){
-            expression.setError("Illegal use of ColorLiteral in math operation");
+        return ExpressionType.UNDEFINED;
+    }
+
+    private ExpressionType getExpressionType(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
+        if (expression instanceof Literal) {
+            if (expression instanceof PercentageLiteral) {
+                return ExpressionType.PERCENTAGE;
+            } else if (expression instanceof PixelLiteral) {
+                return ExpressionType.PIXEL;
+            } else if (expression instanceof ColorLiteral) {
+                return ExpressionType.COLOR;
+            } else if (expression instanceof ScalarLiteral) {
+                return ExpressionType.SCALAR;
+            } else if (expression instanceof BoolLiteral) {
+                return ExpressionType.BOOL;
+            }
         }
+        return checkExpression(expression, scopeVars);
     }
 
     /**
@@ -109,9 +141,9 @@ public class Checker {
      * implements Check (CH01, CHO6)
      * @param reference the current VariableReference ASTNode
      * @param scopeVars list of available declared variables
-     * @return VariableAssignment, null if not declared.
+     * @return the ExpressionType of a declared variable or UNDEFINED if not declared.
      */
-    private VariableAssignment checkVarReference(VariableReference reference, MyHanLinkedList<VariableAssignment> scopeVars) {
+    private ExpressionType checkVarReference(VariableReference reference, MyHanLinkedList<VariableAssignment> scopeVars) {
         var varIsDeclared = false;
         var current = scopeVars.getFirstNode();
 
@@ -125,8 +157,8 @@ public class Checker {
 
         if (!varIsDeclared) {
             reference.setError("Variable:" + reference.name + "is undefined or cant be used in current scope");
-            return null;
+            return ExpressionType.UNDEFINED;
         }
-        return current.getValue();
+        return getExpressionType(current.getValue().expression, scopeVars);
     }
 }
