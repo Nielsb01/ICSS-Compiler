@@ -124,7 +124,8 @@ public class Checker {
      * implements Check (CH02, CH03)
      * @param operation the current Operation ASTNode.
      * @param scopeVars list of available declared variables.
-     * @return the ExpressionType of the given Operation.
+     * @return the ExpressionType of the given Operation,
+     * or UNDEFINED if Operation results in an error.
      */
     private ExpressionType checkOperation(Operation operation, MyHanLinkedList<VariableAssignment> scopeVars) {
         ExpressionType left = checkExpression(operation.lhs, scopeVars);
