@@ -26,12 +26,14 @@ public class Evaluator implements Transform {
             }
 
             if (child instanceof Stylerule) {
-                transformRuleBody(((Stylerule) child).body, globalVariables);
+                var stylerule = (Stylerule) child;
+                stylerule.body = transformRuleBody(stylerule.body, globalVariables);
             }
         }
     }
 
-    private void transformRuleBody(ArrayList<ASTNode> body, MyHanLinkedList<VariableAssignment> scopeVars) {
+    private ArrayList<ASTNode> transformRuleBody(ArrayList<ASTNode> body, MyHanLinkedList<VariableAssignment> scopeVars) {
+        var temp = new ArrayList<ASTNode>();
         for (var child : body) {
             if (child instanceof VariableAssignment) {
                 scopeVars.addFirst((VariableAssignment) child);
@@ -40,12 +42,15 @@ public class Evaluator implements Transform {
 
             if (child instanceof Declaration) {
                 transformDeclaration((Declaration) child, scopeVars);
+                temp.add(child);
+                //System.out.println(temp.toString());
             }
 
             if (child instanceof IfClause) {
-                transformIfClause((IfClause) child, scopeVars);
+                temp.addAll(transformIfClause((IfClause) child, scopeVars));
             }
         }
+        return temp;
     }
 
     private void transformVariableAssignment(VariableAssignment variableAssignment, MyHanLinkedList<VariableAssignment> scopeVars) {
@@ -56,13 +61,12 @@ public class Evaluator implements Transform {
         declaration.expression = transformExpression(declaration.expression, scopeVars);
     }
 
-    private void transformIfClause(IfClause ifClause, MyHanLinkedList<VariableAssignment> scopeVars) {
-        System.out.println("con "+ ifClause.conditionalExpression.toString());
+    private ArrayList<ASTNode> transformIfClause(IfClause ifClause, MyHanLinkedList<VariableAssignment> scopeVars) {
         ifClause.conditionalExpression = transformExpression(ifClause.conditionalExpression, scopeVars);
-        System.out.println("conTransformed "+ ifClause.conditionalExpression);
+        //System.out.println("con "+ ifClause.conditionalExpression);
 
         if (((BoolLiteral) ifClause.conditionalExpression).value) {
-            ifClause.elseClause.body = new ArrayList<>();
+            ifClause.elseClause= null;
         }
         else {
             if (ifClause.elseClause == null) {
@@ -70,10 +74,10 @@ public class Evaluator implements Transform {
             }
             else {
                 ifClause.body = ifClause.elseClause.body;
-                ifClause.elseClause.body = new ArrayList<>();
+                ifClause.elseClause = null;
             }
         }
-        transformRuleBody(ifClause.body, scopeVars);
+        return transformRuleBody(ifClause.body, scopeVars);
     }
 
     private Literal transformExpression(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
@@ -96,7 +100,7 @@ public class Evaluator implements Transform {
     private Literal transformOperation(Operation operation, MyHanLinkedList<VariableAssignment> scopeVars) {
         Literal leftLiteral = transformExpression(operation.lhs, scopeVars);
         Literal rightLiteral = transformExpression(operation.rhs, scopeVars);
-        System.out.println("literal "+ leftLiteral.toString() + rightLiteral.toString());
+        //System.out.println("literal "+ leftLiteral.toString() + rightLiteral.toString());
 
         var leftValue = getLiteralValue(leftLiteral);
         var rightValue= getLiteralValue(rightLiteral);;
@@ -127,7 +131,7 @@ public class Evaluator implements Transform {
             var variableAssignment = currentNode.getValue();
             var name = variableAssignment.name.name;
             if (name.equals(variableReference.name)) {
-                System.out.println("getVariableLiteral returned " + variableAssignment.expression.toString());
+                //System.out.println("getVariableLiteral returned " + variableAssignment.expression.toString());
                 return (Literal) variableAssignment.expression;
             }
             currentNode = currentNode.getNext();
