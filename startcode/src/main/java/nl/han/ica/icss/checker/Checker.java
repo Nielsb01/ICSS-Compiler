@@ -97,13 +97,6 @@ public class Checker {
         }
     }
 
-    /**
-     * Checks an Expression ASTNote calls itself recursively,
-     * implements Check (CH02, CH03)
-     * @param expression the current Expression ASTNode.
-     * @param scopeVars list of available declared variables.
-     * @return the ExpressionType of the given expression.
-     */
     private ExpressionType checkExpression(Expression expression, MyHanLinkedList<VariableAssignment> scopeVars) {
         if (expression instanceof Literal) return getExpressionType(expression, scopeVars);
 
@@ -119,6 +112,13 @@ public class Checker {
         return ExpressionType.UNDEFINED;
     }
 
+    /**
+     * Checks an Operation ASTNote calls checkExpression recursively,
+     * implements Check (CH02, CH03)
+     * @param operation the current Operation ASTNode.
+     * @param scopeVars list of available declared variables.
+     * @return the ExpressionType of the given Operation.
+     */
     private ExpressionType checkOperation(Operation operation, MyHanLinkedList<VariableAssignment> scopeVars) {
         ExpressionType left = checkExpression(operation.lhs, scopeVars);
         ExpressionType right = checkExpression(operation.rhs, scopeVars);
