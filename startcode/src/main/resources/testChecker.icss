@@ -1,0 +1,32 @@
+Color := #ff0000;
+Pixel := 500px;
+Percentage := 50%;
+SomeBool := TRUE;
+
+test {
+	background-color: Width;
+	width: Color;
+	color: #124532 + 1;
+}
+
+test2 {
+ something: Color;
+ Avar := 100px;
+ width: Avar;
+}
+
+test3 {
+    if[SomeBool] {
+        NewColor := #ffffff;
+    }
+    else
+    {
+        color: NewColor;
+    }
+}
+
+test4 {
+    if[Percentage] {
+        color: Color;
+    }
+}

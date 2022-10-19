@@ -1,6 +1,5 @@
 package nl.han.ica.icss.checker;
 
-import nl.han.ica.datastructures.IHANLinkedList;
 import nl.han.ica.datastructures.MyHanLinkedList;
 import nl.han.ica.icss.ast.*;
 import nl.han.ica.icss.ast.literals.*;
@@ -10,8 +9,6 @@ import nl.han.ica.icss.ast.operations.SubtractOperation;
 import nl.han.ica.icss.ast.types.ExpressionType;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-
 
 
 public class Checker {
@@ -52,8 +49,11 @@ public class Checker {
      */
     private void checkIfClause(IfClause ifClause, MyHanLinkedList<VariableAssignment> scopeVars) {
         if (ifClause.conditionalExpression instanceof VariableReference) {
-            var expressionType = checkVarReference((VariableReference) ifClause.conditionalExpression, scopeVars);
-            if (expressionType != ExpressionType.BOOL) ifClause.setError("Condition expression is not a Boolean");
+            var variableReference = (VariableReference) ifClause.conditionalExpression;
+            var expressionType = checkVarReference(variableReference, scopeVars);
+            if (expressionType != ExpressionType.BOOL) {
+                ifClause.setError("Illegal IfClause condition: "+variableReference.name+" is not a Boolean");
+            }
         }
 
         /*
@@ -111,39 +111,39 @@ public class Checker {
             return checkVarReference((VariableReference) expression, scopeVars);
         }
 
-        Operation operation = null;
         if (expression instanceof Operation) {
-            operation = (Operation) expression;
+            return checkOperation((Operation) expression, scopeVars);
         }
 
-        if (operation != null) {
-            ExpressionType left = checkExpression(operation.lhs, scopeVars);
-            ExpressionType right = checkExpression(operation.rhs, scopeVars);
-            if (left == ExpressionType.COLOR || right == ExpressionType.COLOR) {
-                expression.setError("Illegal use of ColorLiteral in math operation");
-                System.out.println("Color check "+ left.toString() + right.toString());
-                return ExpressionType.UNDEFINED;
-            }
-            if (operation instanceof MultiplyOperation) {
-                if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
-                    expression.setError("Illegal use of only non ScalarLiterals in multiply operation");
-                    System.out.println("Mul check "+ left.toString() + right.toString());
-                    return ExpressionType.UNDEFINED;
-                }
-                if (left != ExpressionType.SCALAR) return left;
-                return right;
-            }
-            if ((operation instanceof SubtractOperation || operation instanceof AddOperation) && left != right){
-                expression.setError("Illegal use of different Literals in add or subtract operations");
-                System.out.println("Add/Sub check "+ left.toString() + right.toString());
-                return ExpressionType.UNDEFINED;
-            }
-
-            System.out.println("base "+ left.toString() + right.toString());
-            return left;
-        }
-        System.out.println("operation null " + expression.getClass().toString());
+        System.out.println("Undefined expression " + expression.getClass().toString());
         return ExpressionType.UNDEFINED;
+    }
+
+    private ExpressionType checkOperation(Operation operation, MyHanLinkedList<VariableAssignment> scopeVars) {
+        ExpressionType left = checkExpression(operation.lhs, scopeVars);
+        ExpressionType right = checkExpression(operation.rhs, scopeVars);
+        if (left == ExpressionType.COLOR || right == ExpressionType.COLOR) {
+            operation.setError("Illegal use of ColorLiteral in math operation");
+            System.out.println("Color check "+ left.toString() + right.toString());
+            return ExpressionType.UNDEFINED;
+        }
+        if (operation instanceof MultiplyOperation) {
+            if (left != ExpressionType.SCALAR && right != ExpressionType.SCALAR) {
+                operation.setError("Illegal use of only non ScalarLiterals in multiply operation");
+                System.out.println("Mul check "+ left.toString() + right.toString());
+                return ExpressionType.UNDEFINED;
+            }
+            if (left != ExpressionType.SCALAR) return left;
+            return right;
+        }
+        if ((operation instanceof SubtractOperation || operation instanceof AddOperation) && left != right){
+            operation.setError("Illegal use of different Literals in add or subtract operations");
+            System.out.println("Add/Sub check "+ left.toString() + right.toString());
+            return ExpressionType.UNDEFINED;
+        }
+
+        //System.out.println("base "+ left.toString() + right.toString());
+        return left;
     }
 
     /**
@@ -189,7 +189,7 @@ public class Checker {
         }
 
         if (!varIsDeclared) {
-            reference.setError("Variable:"+reference.name+"is undefined or cant be used in current scope");
+            reference.setError("Illegal use of variable: "+reference.name+", it is undefined or cant be used in current scope");
             return ExpressionType.UNDEFINED;
         }
         return getExpressionType(current.getValue().expression, scopeVars);

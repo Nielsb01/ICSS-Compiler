@@ -1,0 +1,14 @@
+Color := #ff0000;
+Pixel := 500px;
+Percentage := 50%;
+Boolean := TRUE;
+
+test {
+	background-color: Width;
+	width: Color;
+}
+
+test2 {
+    background-color: Percentage;
+    width: Boolean;
+}
