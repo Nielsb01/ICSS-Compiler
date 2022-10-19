@@ -1,0 +1,22 @@
+AdjustColor := TRUE;
+AdjustBackgroundColor := FALSE;
+
+p {
+	if[AdjustColor] {
+        color: #ffffff;
+    }
+}
+
+a {
+    if[AdjustBackgroundColor] {
+        background-color: #ffffff;
+    } else {
+        background-color: #000000;
+    }
+}
+
+#menu {
+    if[AdjustBackgroundColor] {
+        color: #ffffff;
+    }
+}

@@ -20,7 +20,8 @@ public class Checker {
             }
 
             if (child instanceof Stylerule) {
-                checkRuleBody(((Stylerule) child).body, globalVariables);
+                var copy = new MyHanLinkedList<>(globalVariables.getFirstNode());
+                checkRuleBody(((Stylerule) child).body, copy);
             }
         }
     }

@@ -1,0 +1,10 @@
+Color := #ffffff;
+
+p {
+	LinkColor := #ffffff;
+}
+
+a {
+	background-color: Color;
+	color: LinkColor;
+}

@@ -1,0 +1,6 @@
+p {
+	width: #ffffff;
+	height: #ffffff;
+	background-color: 10%;
+	color: 12px;
+}
